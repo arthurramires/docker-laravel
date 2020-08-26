@@ -1,7 +1,7 @@
 steps:
 
 - id: "Rodando docker-compose"
-  name: 'gcr.io/$PROJECT_ID/docker-compose:1.24.0'
+  name: 'gcr.io/$PROJECT_ID/docker-compose:1.25.5'
   args: ['-f','docker-compose.cloudbuild.yaml','up','-d']
 
 - id: "Rodando docker ps"
@@ -35,3 +35,11 @@ steps:
 - id: "Pushing image"
   name: 'gcr.io/cloud-builders/docker'
   args: ['push','gcr.io/$PROJECT_ID/app-laravel:$SHORT_SHA']
+
+- id: "Adjusting deployment file - k8s"
+  name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: '/bin/sh'
+  args: 
+    - '-c'
+    - |
+      sed 's#img-deployment#gcr.io/$PROJECT_ID/app-laravel:$SHORT_SHA#g' .k8s/app/deployment.yaml > k8s/app/deployment-new.yaml;
